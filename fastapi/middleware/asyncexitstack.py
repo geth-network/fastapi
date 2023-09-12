@@ -1,3 +1,4 @@
+import sys
 from typing import Optional
 
 from fastapi.concurrency import AsyncExitStack
@@ -16,6 +17,9 @@ class AsyncExitStackMiddleware:
             try:
                 await self.app(scope, receive, send)
             except Exception as e:
+                if sys.version_info[0] == 3 and sys.version_info[1] >= 11:
+                    if isinstance(e, ExceptionGroup):
+                        e = e.exceptions[0]
                 dependency_exception = e
                 raise e
         if dependency_exception:
